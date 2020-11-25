@@ -2,6 +2,33 @@
 #include "neighbour.h"
 #include <cassert>
 
+// O(n2) neighbour finding function to verify our implementation
+std::vector<int> naive_neighbours(const std::vector<mesh_neighbours::Tetrahedron>& elements) {
+    std::vector<int> nbrs(elements.size() * 4., mesh_neighbours::NONE);
+    for (std::size_t i = 0; i < elements.size(); i++) {
+        auto elt_faces = elements[i].faces();
+        for (std::size_t f = 0; f < 4; f++) {
+            if (nbrs[4*i + f] != mesh_neighbours::NONE) {
+                continue;
+            }
+            for (std::size_t j = 0; j < elements.size(); j++) {
+                if (i == j) {
+                    continue;
+                }
+                auto other_faces = elements[j].faces();
+                for (std::size_t fj = 0; fj < 4; fj++) {
+                    if (elt_faces[f] == other_faces[fj]) {
+                        nbrs[4*i + f] = j;
+                        nbrs[4*j + fj] = i;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return nbrs;
+}
+
 int test_water_block() {
     // verify mesh data
     std::ifstream input("water.msh");
@@ -29,7 +56,10 @@ int test_water_block() {
     for (const auto& elt: elts) {
         neighbour_elts.emplace_back(mesh_neighbours::Tetrahedron(elt.a, elt.b, elt.c, elt.d));
     }
-    mesh_neighbours::tetrahedron_neighbours(neighbour_elts);
+    auto nbrs = mesh_neighbours::tetrahedron_neighbours(neighbour_elts);
+    std::cout << "element 1 has neighbours "
+        << nbrs[0] + 1 << " " << nbrs[1] + 1 << " " << nbrs[2] + 1 << " " << nbrs[3] + 1 << "\n";
+    assert(nbrs == naive_neighbours(neighbour_elts));
     return 0;
 }
 

@@ -129,7 +129,6 @@ EltsAroundPoints elements_around_points(const std::vector<int>& nodes) {
     for (std::size_t i = 1; i < indices.size(); ++i){
       indices.at(i) += indices.at(i-1);
     }
-    print_vec(indices);
 
     std::vector<int> eltList(indices.back(), -1);
     for (int i = 0; i < num_elts; ++i){
@@ -139,7 +138,6 @@ EltsAroundPoints elements_around_points(const std::vector<int>& nodes) {
             eltList[node_pos] = i;
             indices.at(node) += 1;
         }
-        print_vec(eltList);
     }
 
     // shift indices vector right by 1
@@ -147,17 +145,6 @@ EltsAroundPoints elements_around_points(const std::vector<int>& nodes) {
         indices[i] = indices[i-1];
     }
     indices[0] = 0;
-
-    print_vec(eltList);
-
-    for (std::size_t i = 0; i < indices.size() - 1; ++i) {
-        auto num_elts = indices[i+1] - indices[i];
-        std::cout << "node " << i + 1 << " is part of " << num_elts << " elements\n\t";
-        for (int j = indices[i]; j < indices[i+1]; ++j) {
-            std::cout << eltList[j] << " ";
-        }
-        std::cout << "\n" ;
-    }
 
 	return EltsAroundPoints { eltList, indices };
 }
