@@ -35,7 +35,7 @@ int test_water_block() {
     EGS_Mesh mesh = msh_parser::parse_msh_file(input);
     auto elts = mesh.elements();
     assert(elts.size() == 1160);
-    assert(elts[0].medium_tag == 69);
+    assert(elts[0].medium_tag == 1);
     assert(elts[0].a == 142 && elts[0].b == 223 && elts[0].c == 130 && elts[0].d == 353);
 
     auto nodes = mesh.nodes();
@@ -47,7 +47,41 @@ int test_water_block() {
 
     auto materials = mesh.materials();
     assert(materials.size() == 1);
-    assert(materials[0].tag == 69);
+    assert(materials[0].tag == 1);
+    assert(materials[0].medium_name == "Water");
+
+    // verify neighbour information
+    std::vector<mesh_neighbours::Tetrahedron> neighbour_elts;
+    neighbour_elts.reserve(elts.size());
+    for (const auto& elt: elts) {
+        neighbour_elts.emplace_back(mesh_neighbours::Tetrahedron(elt.a, elt.b, elt.c, elt.d));
+    }
+    auto nbrs = mesh_neighbours::tetrahedron_neighbours(neighbour_elts);
+    std::cout << "element 1 has neighbours "
+        << nbrs[0] + 1 << " " << nbrs[1] + 1 << " " << nbrs[2] + 1 << " " << nbrs[3] + 1 << "\n";
+    assert(nbrs == naive_neighbours(neighbour_elts));
+    return 0;
+}
+
+int test_water10000_block() {
+    // verify mesh data
+    std::ifstream input("water10000.msh");
+    EGS_Mesh mesh = msh_parser::parse_msh_file(input);
+    auto elts = mesh.elements();
+    assert(elts.size() == 9280);
+    assert(elts[0].medium_tag == 1);
+    assert(elts[0].a == 142 && elts[0].b == 364 && elts[0].c == 366 && elts[0].d == 367);
+
+    auto nodes = mesh.nodes();
+    assert(nodes.size() == 2197);
+    assert(nodes[2196].tag == 2197 &&
+           nodes[2196].x == 0.8045166131834418 &&
+           nodes[2196].y == 0.175446902578746 &&
+           nodes[2196].z == 0.1343100687184781);
+
+    auto materials = mesh.materials();
+    assert(materials.size() == 1);
+    assert(materials[0].tag == 1);
     assert(materials[0].medium_name == "Water");
 
     // verify neighbour information
@@ -80,6 +114,7 @@ int main() {
     int err = 0;
 
     RUN_TEST(test_water_block());
+    RUN_TEST(test_water10000_block());
 
     std::cerr << num_total - num_failed << " out of " << num_total << " tests passed\n";
     return num_failed;
