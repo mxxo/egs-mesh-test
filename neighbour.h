@@ -19,13 +19,13 @@ public:
     // Make a tetrahedron from four nodes.
     //
     // Throws a std::invalid_argument exception if:
-    // * negative node tags are passed in or,
+    // * Node tags smaller than 1 are passed in or,
     // * duplicate node tags are passed in.
     Tetrahedron(int a, int b, int c, int d) {
-        if (a < 0) { throw std::invalid_argument("negative node " + std::to_string(a)); }
-        if (b < 0) { throw std::invalid_argument("negative node " + std::to_string(b)); }
-        if (c < 0) { throw std::invalid_argument("negative node " + std::to_string(c)); }
-        if (d < 0) { throw std::invalid_argument("negative node " + std::to_string(d)); }
+        if (a < 1) { throw std::invalid_argument("node < 1" + std::to_string(a)); }
+        if (b < 1) { throw std::invalid_argument("node < 1" + std::to_string(b)); }
+        if (c < 1) { throw std::invalid_argument("node < 1" + std::to_string(c)); }
+        if (d < 1) { throw std::invalid_argument("node < 1" + std::to_string(d)); }
         if (a == b || a == c || a == d) {
             throw std::invalid_argument("duplicate node " + std::to_string(a));
         }
@@ -77,7 +77,7 @@ private:
 
 // Find the elements around each node.
 //
-// Adapted from Applied CFD Techniques section 2.2.1
+// Requires dense node numbering starting at 1.
 SharedNodes elements_around_nodes(const std::vector<mesh_neighbours::Tetrahedron>& elements) {
     // the number of unique nodes is equal to the maximum node number
     // because the nodes are continuously numbered from 1..=max_node
@@ -97,9 +97,9 @@ SharedNodes elements_around_nodes(const std::vector<mesh_neighbours::Tetrahedron
     return SharedNodes(shared_nodes);
 }
 
-// Given a list of node numbers starting from 1, returns the element neighbours.
+// Given a list of tetrahedrons, returns the indices of neighbouring tetrahedrons.
 //
-// Adapted from Applied CFD Techniques section 2.2.3
+// Requires dense node numbering starting at 1.
 std::vector<std::array<int,4>> tetrahedron_neighbours(
         const std::vector<mesh_neighbours::Tetrahedron>& elements)
 {
@@ -118,10 +118,7 @@ std::vector<std::array<int,4>> tetrahedron_neighbours(
             }
             auto face = elt_faces[f];
             // select a face node and loop through the other elements that share it
-            // -- any node will work, since to be a neighbour other elements
-            //    must have the same list of face nodes
-            auto face_node = face[0];
-            const auto& elts_sharing_node = shared_nodes.elements_around_node(face_node);
+            const auto& elts_sharing_node = shared_nodes.elements_around_node(face[0]);
             for (auto j: elts_sharing_node) {
                 if (j == i) {
                     // elt can't be a neighbour of itself, skip it
