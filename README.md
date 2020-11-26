@@ -9,3 +9,8 @@ main EGSnrc repo.
 * One medium (Water)
 * 1160 tetrahedrons
 * 363 nodes
+
+## Water 10000
+* One medium (Water)
+* 9280 tetrahedrons
+* 2197 nodes
