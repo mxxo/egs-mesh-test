@@ -22,10 +22,10 @@ public:
     // * Node tags smaller than 1 are passed in or,
     // * duplicate node tags are passed in.
     Tetrahedron(int a, int b, int c, int d) {
-        if (a < 1) { throw std::invalid_argument("node < 1" + std::to_string(a)); }
-        if (b < 1) { throw std::invalid_argument("node < 1" + std::to_string(b)); }
-        if (c < 1) { throw std::invalid_argument("node < 1" + std::to_string(c)); }
-        if (d < 1) { throw std::invalid_argument("node < 1" + std::to_string(d)); }
+        if (a < 1) { throw std::invalid_argument("got node " + std::to_string(a) + " < 1"); }
+        if (b < 1) { throw std::invalid_argument("got node " + std::to_string(b) + " < 1"); }
+        if (c < 1) { throw std::invalid_argument("got node " + std::to_string(c) + " < 1"); }
+        if (d < 1) { throw std::invalid_argument("got node " + std::to_string(d) + " < 1"); }
         if (a == b || a == c || a == d) {
             throw std::invalid_argument("duplicate node " + std::to_string(a));
         }
