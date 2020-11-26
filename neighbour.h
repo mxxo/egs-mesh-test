@@ -3,11 +3,8 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <iostream>
 #include <stdexcept>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace mesh_neighbours {
@@ -67,29 +64,6 @@ private:
     int _d = -1;
 };
 
-inline void print_vec(const std::vector<int>& vec) {
-    for (auto v: vec) {
-        std::cout << v << " ";
-    }
-    std::cout << "\n";
-}
-
-/// Get the sparse-dense node renumbering map.
-std::unordered_map<int, int> renumber_sparse_nodes(const std::vector<int>& nodes) {
-    auto uniq_nodes = nodes;
-    std::sort(uniq_nodes.begin(), uniq_nodes.end());
-    auto last = std::unique(uniq_nodes.begin(), uniq_nodes.end());
-    uniq_nodes.erase(last, uniq_nodes.end());
-
-    std::unordered_map<int, int> node_renum;
-    node_renum.reserve(uniq_nodes.size());
-    for (std::size_t i = 0; i < uniq_nodes.size(); ++i) {
-        // renumbered nodes start at 1
-        node_renum.insert({uniq_nodes[i], i + 1});
-    }
-    return node_renum;
-}
-
 class SharedNodes {
 public:
     SharedNodes(std::vector<std::vector<int>> shared_nodes) :
@@ -126,18 +100,20 @@ SharedNodes elements_around_nodes(const std::vector<mesh_neighbours::Tetrahedron
 // Given a list of node numbers starting from 1, returns the element neighbours.
 //
 // Adapted from Applied CFD Techniques section 2.2.3
-std::vector<int> tetrahedron_neighbours(const std::vector<mesh_neighbours::Tetrahedron>& elements) {
+std::vector<std::array<int,4>> tetrahedron_neighbours(
+        const std::vector<mesh_neighbours::Tetrahedron>& elements)
+{
     const int NUM_FACES = 4;
     const auto shared_nodes = elements_around_nodes(elements);
 
     // initialize neighbour element index vector with "no neighbour" constant
-    std::vector<int> neighbours(elements.size() * NUM_FACES, mesh_neighbours::NONE);
+    std::vector<std::array<int, 4>> neighbours(elements.size(), {NONE, NONE, NONE, NONE});
 
     for (int i = 0; i < static_cast<int>(elements.size()); i++) {
         auto elt_faces = elements[i].faces();
         for (int f = 0; f < NUM_FACES; f++) {
             // if this face's neighbour was already found, skip it
-            if (neighbours[i * NUM_FACES + f] != NONE) {
+            if (neighbours[i][f] != NONE) {
                 continue;
             }
             auto face = elt_faces[f];
@@ -154,8 +130,8 @@ std::vector<int> tetrahedron_neighbours(const std::vector<mesh_neighbours::Tetra
                 auto other_elt_faces = elements[j].faces();
                 for (int jf = 0; jf < NUM_FACES; jf++) {
                     if (face == other_elt_faces[jf]) {
-                        neighbours[i * NUM_FACES + f] = j;
-                        neighbours[j * NUM_FACES + jf] = i;
+                        neighbours[i][f] = j;
+                        neighbours[j][jf] = i;
                         break;
                     }
                 }
