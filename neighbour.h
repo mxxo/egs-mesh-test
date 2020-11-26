@@ -64,6 +64,10 @@ private:
     int _d = -1;
 };
 
+/// The mesh_neighbours::internal namespace is for internal API functions and is not
+/// part of the public API. Functions and types may change without warning.
+namespace internal {
+
 class SharedNodes {
 public:
     SharedNodes(std::vector<std::vector<int>> shared_nodes) :
@@ -97,6 +101,8 @@ SharedNodes elements_around_nodes(const std::vector<mesh_neighbours::Tetrahedron
     return SharedNodes(shared_nodes);
 }
 
+} // namespace internal
+
 // Given a list of tetrahedrons, returns the indices of neighbouring tetrahedrons.
 //
 // Requires dense node numbering starting at 1.
@@ -104,7 +110,7 @@ std::vector<std::array<int,4>> tetrahedron_neighbours(
         const std::vector<mesh_neighbours::Tetrahedron>& elements)
 {
     const int NUM_FACES = 4;
-    const auto shared_nodes = elements_around_nodes(elements);
+    const auto shared_nodes = mesh_neighbours::internal::elements_around_nodes(elements);
 
     // initialize neighbour element index vector with "no neighbour" constant
     std::vector<std::array<int, 4>> neighbours(elements.size(), {NONE, NONE, NONE, NONE});
