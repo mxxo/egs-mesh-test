@@ -12,6 +12,7 @@
 
 namespace mesh_neighbours {
 
+// Magic number for no neighbour.
 constexpr int NONE = -1;
 
 class Tetrahedron {
@@ -164,42 +165,20 @@ std::vector<int> tetrahedron_neighbours(const std::vector<mesh_neighbours::Tetra
     const auto elt_indices = elements_around_points(element_nodes);
     const auto& eltList = elt_indices.elt_list;
     const auto& indices = elt_indices.list_indices;
-    const int num_unique_nodes = indices.size() - 1;
 
     const int num_elts = element_nodes.size() / NODES_PER_ELT;
     // initialize neighbour element index vector with "no neighbour" constant
     std::vector<int> neighbours(num_elts * FACES_PER_ELT, mesh_neighbours::NONE);
-    std::array<int, NODES_PER_FACE> face;
-
-    // During the neighbour search, elements at face point indices of this vector
-    // are set to 1. Elements are added together and if the result is equal to the
-    // number of nodes per face we've found a face neighbour.
-    std::vector<int> face_point_flag(num_unique_nodes, 0);
 
     for (int i = 0; i < num_elts; i++) {
-        for (int j = 0; j < FACES_PER_ELT; j++){
+        auto elt_faces = elements[i].faces();
+        for (int j = 0; j < FACES_PER_ELT; j++) {
             // if this face's neighbour was already found, skip it
             if (neighbours[i * FACES_PER_ELT + j] != NONE) {
                 continue;
             }
-            int face_node_idx = 0;
-            for (int k = 0; k < NODES_PER_ELT; k++) {
-                // face 0 is made of nodes {1, 2, 3}, 1 is made of nodes {0, 2, 3}, etc.
-                if (k != j) {
-                    auto nd = element_nodes[i * NODES_PER_ELT + k];
-                    face[face_node_idx] = nd;
-                    face_node_idx += 1;
-                    // set face_point_flag value for this node
-                    face_point_flag[nd - 1] = 1;
-                }
-            }
-            // std::cout << "face " << j << " is made of points { ";
-            // for (auto n: face) {
-            //     std::cout << n << " ";
-            // }
-            // std::cout << "}\n";
-
-            // select a point of this face and loop over the other elements that have it
+            auto face = elt_faces[j];
+            // select a point of this face and loop over the other elements that share it
             // -- any point will work, since to be a neighbour other elements
             //    must have the same list of face points
             auto face_point = face[0];
@@ -210,25 +189,14 @@ std::vector<int> tetrahedron_neighbours(const std::vector<mesh_neighbours::Tetra
                     continue;
                 }
                 // to match, all face nodes must match the reference face nodes
+                auto other_elt_faces = elements[elt].faces();
                 for (int other_face_idx = 0; other_face_idx < FACES_PER_ELT; other_face_idx++) {
-                    int num_shared = 0;
-                    for (int other_face_point = 0; other_face_point < NODES_PER_ELT; other_face_point++) {
-                        if (other_face_point == other_face_idx) {
-                            continue;
-                        }
-                        auto other_face_node = element_nodes[elt * NODES_PER_ELT + other_face_point];
-                        num_shared += face_point_flag[other_face_node - 1];
-                    }
-                    if (num_shared == NODES_PER_FACE) {
-                        // mark neighbouring elements as neighbours of each other
+                    if (face == other_elt_faces[other_face_idx]) {
                         neighbours[i * FACES_PER_ELT + j] = elt;
                         neighbours[elt * FACES_PER_ELT + other_face_idx] = i;
+                        break;
                     }
                 }
-            }
-            // reset the face_point_flag elements
-            for (int pt: face) {
-                face_point_flag[pt-1] = 0;
             }
         }
     }

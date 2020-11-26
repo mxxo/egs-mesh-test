@@ -4,7 +4,7 @@
 
 // O(n2) neighbour finding function to verify our implementation
 std::vector<int> naive_neighbours(const std::vector<mesh_neighbours::Tetrahedron>& elements) {
-    std::vector<int> nbrs(elements.size() * 4., mesh_neighbours::NONE);
+    std::vector<int> nbrs(elements.size() * 4, mesh_neighbours::NONE);
     for (std::size_t i = 0; i < elements.size(); i++) {
         auto elt_faces = elements[i].faces();
         for (std::size_t f = 0; f < 4; f++) {
@@ -60,6 +60,14 @@ int test_water_block() {
     std::cout << "element 1 has neighbours "
         << nbrs[0] + 1 << " " << nbrs[1] + 1 << " " << nbrs[2] + 1 << " " << nbrs[3] + 1 << "\n";
     assert(nbrs == naive_neighbours(neighbour_elts));
+
+    // check that we have no isolated tetrahedrons
+    for (std::size_t i = 0; i < elts.size(); i++) {
+        assert(!(nbrs[4*i] == mesh_neighbours::NONE &&
+                 nbrs[4*i + 1] == mesh_neighbours::NONE &&
+                 nbrs[4*i + 2] == mesh_neighbours::NONE &&
+                 nbrs[4*i + 3] == mesh_neighbours::NONE));
+    }
     return 0;
 }
 
@@ -94,6 +102,15 @@ int test_water10000_block() {
     std::cout << "element 1 has neighbours "
         << nbrs[0] + 1 << " " << nbrs[1] + 1 << " " << nbrs[2] + 1 << " " << nbrs[3] + 1 << "\n";
     assert(nbrs == naive_neighbours(neighbour_elts));
+
+    // check that we have no isolated tetrahedrons
+    for (std::size_t i = 0; i < elts.size(); i++) {
+        assert(!(nbrs[4*i] == mesh_neighbours::NONE &&
+                 nbrs[4*i + 1] == mesh_neighbours::NONE &&
+                 nbrs[4*i + 2] == mesh_neighbours::NONE &&
+                 nbrs[4*i + 3] == mesh_neighbours::NONE));
+    }
+
     return 0;
 }
 
