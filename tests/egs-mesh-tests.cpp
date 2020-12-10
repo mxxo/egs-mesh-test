@@ -1,5 +1,5 @@
 #include "msh_parser.h"
-#include "neighbour.h"
+#include "mesh_neighbours.h"
 #include <cassert>
 
 // O(n2) neighbour finding function to verify our implementation
