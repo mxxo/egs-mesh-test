@@ -3,9 +3,9 @@
 #include <cassert>
 
 // O(n2) neighbour finding function to verify our implementation
-std::vector<std::array<int, 4>> naive_neighbours(const std::vector<mesh_neighbours::Tetrahedron>& elements) {
+std::vector<std::array<std::size_t, 4>> naive_neighbours(const std::vector<mesh_neighbours::Tetrahedron>& elements) {
     using mesh_neighbours::NONE;
-    std::vector<std::array<int, 4>> nbrs(elements.size(), {NONE, NONE, NONE, NONE});
+    std::vector<std::array<std::size_t, 4>> nbrs(elements.size(), {NONE, NONE, NONE, NONE});
     for (std::size_t i = 0; i < elements.size(); i++) {
         auto elt_faces = elements[i].faces();
         for (std::size_t f = 0; f < 4; f++) {
